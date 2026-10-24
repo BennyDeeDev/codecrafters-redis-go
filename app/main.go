@@ -32,11 +32,20 @@ func main() {
 
 	msg := []byte("+PONG\r\n")
 
-	r, err := conn.Write(msg)
-	if err != nil {
-		fmt.Println("Error writing message: ", err.Error())
-		os.Exit(1)
+	buf := make([]byte, 1024)
+
+	for {
+		_, err := conn.Read(buf)
+		if err != nil {
+			fmt.Println("Error reading Message: ", err.Error())
+			os.Exit(1)
+		}
+
+		_, err = conn.Write(msg)
+		if err != nil {
+			fmt.Println("Error writing message: ", err.Error())
+			os.Exit(1)
+		}
 	}
 
-	fmt.Println(r)
 }
