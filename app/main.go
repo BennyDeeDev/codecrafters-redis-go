@@ -36,16 +36,28 @@ func handleClient(conn net.Conn) {
 	defer conn.Close()
 
 	buf := make([]byte, 1024)
-	msg := []byte("+PONG\r\n")
 
 	for {
-		_, err := conn.Read(buf)
+		n, err := conn.Read(buf)
 		if err != nil {
 			fmt.Println("Error reading Message: ", err.Error())
 			os.Exit(1)
 		}
 
-		_, err = conn.Write(msg)
+		request, _, err := decodeRESP(buf[:n])
+		if err != nil {
+			fmt.Println("Error decoding request: ", err.Error())
+			os.Exit(1)
+		}
+
+		response := handleCommand(request)
+		encodedResponse, err := encodeRESP(response)
+		if err != nil {
+			fmt.Println("Error encoding response: ", err.Error())
+			os.Exit(1)
+		}
+
+		_, err = conn.Write(encodedResponse)
 		if err != nil {
 			fmt.Println("Error writing message: ", err.Error())
 			os.Exit(1)
