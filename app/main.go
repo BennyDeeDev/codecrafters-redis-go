@@ -13,6 +13,7 @@ var _ = os.Exit
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Println("Logs from your program will appear here!")
+	store := NewStore()
 
 	listener, err := net.Listen("tcp", "0.0.0.0:6379")
 	if err != nil {
@@ -28,11 +29,11 @@ func main() {
 			os.Exit(1)
 		}
 
-		go handleClient(conn)
+		go handleClient(conn, store)
 	}
 }
 
-func handleClient(conn net.Conn) {
+func handleClient(conn net.Conn, store *Store) {
 	defer conn.Close()
 
 	buf := make([]byte, 1024)
@@ -50,7 +51,7 @@ func handleClient(conn net.Conn) {
 			os.Exit(1)
 		}
 
-		response := handleCommand(request)
+		response := handleCommand(request, store)
 		encodedResponse, err := encodeRESP(response)
 		if err != nil {
 			fmt.Println("Error encoding response: ", err.Error())

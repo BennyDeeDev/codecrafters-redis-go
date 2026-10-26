@@ -21,6 +21,7 @@ type RESPValue struct {
 	String  string
 	Integer int64
 	Array   []RESPValue
+	Null    bool
 }
 
 func readRESPLine(input []byte) (line []byte, consumed int, err error) {
@@ -157,6 +158,9 @@ func encodeRESP(value RESPValue) ([]byte, error) {
 	case RESPInteger:
 		return fmt.Appendf(nil, ":%d\r\n", value.Integer), nil
 	case RESPBulkString:
+		if value.Null {
+			return []byte("$-1\r\n"), nil
+		}
 		return fmt.Appendf(nil, "$%d\r\n%s\r\n", len(value.String), value.String), nil
 	case RESPArray:
 		encoded := fmt.Appendf(nil, "*%d\r\n", len(value.Array))
